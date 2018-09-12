@@ -20,7 +20,7 @@ public class SolveMaze {
         /*
          * Create a new 10 x 10 maze. Feel free to change these values.
          */
-        Maze maze = new Maze(10, 10);
+        Maze maze = new Maze(200, 200);
 
         /*
          * Pick (0, 0), the bottom left corner, as the starting point.
@@ -29,18 +29,63 @@ public class SolveMaze {
         maze.startAtZero();
         maze.endAtTopRight();
 
-        /*
-         * You should be able to solve a 10 x 10 maze in (far fewer than) 1000 steps.
-         * Feel free to adjust this number if you experiment with other mazes.
-         */
-        for (int step = 0; step < 1000; step++) {
-            // Implement your maze solving algorithm here
+        double maxSteps = 1e7;
+
+        // Deterministic (hug right wall)
+        long startTime = System.currentTimeMillis();
+        int step = 0;
+        while (++step < maxSteps && !maze.isFinished()) {
+            deterministic(maze);
         }
 
         if (maze.isFinished()) {
-            System.out.println("You solved the maze!");
+            System.out.println("Deterministic solved the " + maze.getxDimension() + " by " + maze.getyDimension()
+                    + " maze in " + step + " steps. (Took "
+                    + (System.currentTimeMillis() - startTime) + " ms to complete.)");
         } else {
-            System.out.println("Try again!");
+            System.out.println("Deterministic was not able to solve the maze in " + step + " steps.");
         }
+
+
+        // Reset maze
+        maze.startAtZero();
+
+        // Random Walk
+        startTime = System.currentTimeMillis();
+        step = 0;
+        while (++step < maxSteps && !maze.isFinished()) {
+            randomWalk(maze);
+        }
+
+        if (maze.isFinished()) {
+            System.out.println("RandomWalk solved the " + maze.getxDimension() + " by " + maze.getyDimension()
+                    + " maze in " + step + " steps. (Took "
+                    + (System.currentTimeMillis() - startTime) + " ms to complete.)");
+        } else {
+            System.out.println("RandomWalk was not able to solve the maze in " + step + " steps.");
+        }
+    }
+
+    private static void deterministic(final Maze maze) {
+        maze.turnRight();
+        if (!maze.canMove()) {
+            while (!maze.canMove()) {
+                maze.turnLeft();
+            }
+        }
+        maze.move();
+    }
+
+    private static void randomWalk(final Maze maze) {
+        if (!maze.canMove()) {
+            for (int i = 0; i < (int)(Math.random() * 4); i++) {
+                if (Math.random() < 0.5) {
+                    maze.turnLeft();
+                } else {
+                    maze.turnRight();
+                }
+            }
+        }
+        maze.move();
     }
 }
